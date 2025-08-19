@@ -7,8 +7,7 @@ Esta es una API RESTful para gestionar tareas, desarrollada con **Flask**, utili
 La aplicación está desplegada en [Render](https://render.com/) utilizando el servidor WSGI **Waitress**.
 
 🔗 **Enlace a la API en producción**:  
-`https://<tu-subdominio>.onrender.com`  
-_(Reemplaza esto con tu URL real de Render)_
+https://api-rest-ll3v.onrender.com
 
 ---
 
