@@ -77,6 +77,7 @@ Para probar la API puedes usar herramientas como Postman o Insomnia. Asegúrate 
 Authorization: Bearer <token>
 
 🌐 Despliegue en Render
+
 1. Sube tu código a GitHub
 2. Crea un nuevo servicio en Render (Web Service → Python)
 3. Usa el siguiente comando de inicio:
