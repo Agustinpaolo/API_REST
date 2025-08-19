@@ -1,89 +1,94 @@
-# 📌 API REST - To-Do List
+📌 API REST – To-Do List
 
-Esta es una API RESTful para gestionar tareas, desarrollada con **Flask**, utilizando **autenticación JWT**, control de acceso por **roles de usuario** (admin y usuario estándar), y conexión a base de datos **SQLite** o **PostgreSQL**.
+API RESTful para gestionar tareas con Flask, JWT y control de acceso por roles. Persistencia en SQLite, documentación con Swagger (Flasgger) y despliegue en Render con Waitress.
 
-## 🚀 Despliegue en producción
+Demo: https://api-rest-ll3v.onrender.com
+Docs Swagger: /apidocs
 
-La aplicación está desplegada en [Render](https://render.com/) utilizando el servidor WSGI **Waitress**.
+🚀 Características
 
-🔗 **Enlace a la API en producción**:  
-https://api-rest-ll3v.onrender.com
+Autenticación con JWT (login/refresh, expiración de tokens).
 
----
+Roles: admin (gestiona todo) y user (gestiona sus propias tareas).
 
-## 📦 Tecnologías utilizadas
+CRUD de tareas (crear, listar, ver por ID, actualizar, eliminar).
 
-- Python 3
-- Flask
-- Flask-JWT-Extended
-- SQLAlchemy
-- Marshmallow
-- dotenv
-- Waitress
-- Git + GitHub
+Swagger UI con Flasgger.
 
----
+Hash de contraseñas con Werkzeug.
 
-## ⚙️ Instalación local
+Config por dotenv.
 
-1. Clona el repositorio:
+🧰 Tecnologías
 
-```bash
-git clone https://github.com/tu_usuario/api_rest.git
-cd api_rest
+Backend: Python, Flask, Flask-JWT-Extended
 
-2. Crea y activa un entorno virtual:
+Docs: Flasgger (Swagger UI)
 
+Persistencia: SQLite (stdlib sqlite3).
+
+Seguridad: werkzeug.security (hash/salt)
+
+Entorno/DevOps: python-dotenv, Git/GitHub
+
+Producción: Waitress (Render)
+
+🛠 Instalación local
+
+git clone https://github.com/Agustinpaolo/API_REST.git
+cd API_REST
 python -m venv venv
-venv\Scripts\activate  # En Windows
-source venv/bin/activate  # En Linux/Mac
-
-3. Instala las dependencias:
-
+# Windows
+venv\Scripts\activate
+# Linux/Mac
+source venv/bin/activate
 pip install -r requirements.txt
 
-4. Crea un archivo .env con las siguientes variables:
+Crear .env:
 
 SECRET_KEY=tu_clave_secreta
 DATABASE_URL=sqlite:///tareas.db
 
-5. Ejecuta el servidor en desarrollo:
+Ejecutar:
 
 python app.py
+# http://127.0.0.1:5000
 
 🔐 Autenticación y roles
 
-La API utiliza tokens JWT. Los usuarios pueden tener dos tipos de rol:
+Enviar el token en cada request protegido:
 
-admin: puede crear, editar y eliminar cualquier tarea.
-
-user: solo puede ver, crear y modificar sus propias tareas.
-
-🧪 Endpoints principales
-
-| Método | Ruta          | Descripción                        |
-| ------ | ------------- | ---------------------------------- |
-| POST   | `/register`   | Registrar nuevo usuario            |
-| POST   | `/login`      | Iniciar sesión y obtener token     |
-| GET    | `/tasks`      | Ver todas las tareas               |
-| POST   | `/tasks`      | Crear una nueva tarea              |
-| GET    | `/tasks/<id>` | Ver una tarea específica           |
-| PUT    | `/tasks/<id>` | Actualizar una tarea               |
-| DELETE | `/tasks/<id>` | Eliminar una tarea (admin o dueño) |
-
-✅ Pruebas
-
-Para probar la API puedes usar herramientas como Postman o Insomnia. Asegúrate de incluir el token JWT en los headers:
 Authorization: Bearer <token>
+
+-admin: CRUD sobre cualquier tarea.
+-user: CRUD sólo sobre sus tareas.
+
+📑 Endpoints principales
+
+| Método | Ruta          | Descripción          |
+| -----: | ------------- | -------------------- |
+|   POST | `/register`   | Registrar usuario    |
+|   POST | `/login`      | Iniciar sesión (JWT) |
+|    GET | `/tasks`      | Listar tareas        |
+|   POST | `/tasks`      | Crear tarea          |
+|    GET | `/tasks/<id>` | Ver tarea por ID     |
+|    PUT | `/tasks/<id>` | Actualizar tarea     |
+| DELETE | `/tasks/<id>` | Eliminar tarea       |
 
 🌐 Despliegue en Render
 
-1. Sube tu código a GitHub
-2. Crea un nuevo servicio en Render (Web Service → Python)
-3. Usa el siguiente comando de inicio:
-python -m waitress --listen=0.0.0.0:$PORT app:app
-4. Asegúrate de definir las variables de entorno SECRET_KEY y DATABASE_URL en Render.
+-Servicio “Web Service → Python”.
+-Comando:
 
-🧠 Autor
-Agustín - Desarrollador Python Junior.
-Este proyecto forma parte de mi portafolio como desarrollador backend.
+python -m waitress --listen=0.0.0.0:$PORT app:app
+
+-Variables de entorno: SECRET_KEY, DATABASE_URL.
+
+✅ Pruebas manuales
+
+Postman/Insomnia: incluir Authorization: Bearer <token> en requests a rutas protegidas.
+
+👤 Autor
+
+Agustín — Desarrollador Python Junior
+GitHub: https://github.com/Agustinpaolo
