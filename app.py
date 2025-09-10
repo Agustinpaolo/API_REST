@@ -402,5 +402,12 @@ def get_task_by_id_endpoint(task_id):
         "status": task[3]
     }), 200
 
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({
+        "message": "Bienvenido a la API REST",
+        "docs": "/apidocs"
+    }), 200
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
