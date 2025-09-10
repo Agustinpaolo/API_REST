@@ -402,7 +402,7 @@ def get_task_by_id_endpoint(task_id):
         "status": task[3]
     }), 200
 
-@app.route("/", methods=["GET"])
+@app.route("/health", methods=["GET"])
 def home():
     return jsonify({
         "message": "Bienvenido a la API REST",
