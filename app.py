@@ -25,7 +25,6 @@ swagger = Swagger(app)
 init_db()
 
 # Configurar JWT
-app.config["JWT_SECRET_KEY"] = "tu_clave_secreta"  # Cambia esto por una clave segura
 jwt = JWTManager(app)
 
 # Manejar errores de tokens inválidos
@@ -101,13 +100,12 @@ def register():
     password = data.get("password")
     role = data.get("role", "user")
 
-    # Validar campos obligatorios
     if not username or not password:
         return jsonify({"error": "Los campos 'username' y 'password' son obligatorios"}), 400
 
-    # Hashear la contraseña
     hashed_password = generate_password_hash(password)
 
+    conn = None
     try:
         conn = connect_db()
         cursor = conn.cursor()
@@ -122,7 +120,6 @@ def register():
     except Exception as e:
         return jsonify({"error": f"Ocurrió un error al registrar el usuario: {e}"}), 500
     finally:
-        # Asegurarse de cerrar la conexión a la base de datos
         if conn:
             conn.close()
 
@@ -403,6 +400,10 @@ def get_task_by_id_endpoint(task_id):
     }), 200
 
 @app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"}), 200
+
+@app.route("/", methods=["GET"])
 def home():
     return jsonify({
         "message": "Bienvenido a la API REST",
