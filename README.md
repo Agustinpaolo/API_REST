@@ -1,253 +1,227 @@
-# REST API — To-Do List
+# REST API – Task Manager
 
-A small but complete RESTful API for managing tasks, built with **Flask**, **JWT authentication**, **role-based access control** (admin and standard user), and **SQLAlchemy** with SQLite (local) or PostgreSQL (production).
-
-> Live demo: https://api-rest-ll3v.onrender.com
-
----
+A RESTful API built with Flask to manage tasks. It includes JWT-based authentication, role-based access control, task CRUD operations, and Swagger documentation.
 
 ## Features
-
-- User registration and login with **JWT** tokens
-- **RBAC**: `admin` can manage any task; `user` can only manage their own
-- CRUD for tasks: create, list, get by id, update, delete
-- Input/output validation with Marshmallow
-- Production-ready WSGI entrypoint (Waitress) + `wsgi.py`
-- Simple tests and DB bootstrap script
-
----
-
-## Tech Stack
-
-- Python 3.x, Flask
-- Flask-JWT-Extended
-- SQLAlchemy (+ Marshmallow)
-- python-dotenv
-- Waitress (WSGI)
-- SQLite (dev) / PostgreSQL (prod)
+- **User registration** with role assignment (admin or user).
+- **Login** to obtain JWT tokens.
+- **Role-based access control**:  
+  - Admin can create, update, delete, and view tasks.
+  - Regular users can only list tasks.
+- **CRUD operations for tasks**:
+  - Create, read, update, delete.
+  - Search, filter, and paginate tasks.
+- **Swagger UI** at `/apidocs` for easy API exploration.
+- **Health check endpoint**.
 
 ---
 
 ## Project Structure
-
 ```
-API_REST/
-├─ app.py               # Flask app / routes and JWT setup
-├─ models.py            # SQLAlchemy models and Marshmallow schemas
-├─ init_database.py     # Quick DB seed/init script
-├─ wsgi.py              # WSGI entrypoint for production
-├─ requirements.txt
-├─ database.db          # SQLite (dev) — ignored in production
-├─ tests.py             # Basic tests / examples
-└─ README.md
+project/
+├── app.py           # Main Flask application
+├── models.py        # Database functions
+├── .env             # Environment variables
 ```
 
 ---
 
-## Getting Started (Local)
+## Environment Variables
+The application uses the following variables from the `.env` file:
+- `SECRET_KEY` – Flask secret key.
+- `JWT_SECRET_KEY` – Key for JWT token generation.
 
-### 1) Clone and enter the project
+---
 
+## Installation
 ```bash
-git clone https://github.com/Agustinpaolo/API_REST.git
-cd API_REST
-```
+# Clone the repository
+git clone <repo_url>
 
-### 2) Create and activate a virtualenv
-
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# Linux/macOS
-python -m venv venv
-source venv/bin/activate
-```
-
-### 3) Install dependencies
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-### 4) Environment variables
-
-Create a `.env` file in the project root:
-
-```bash
-SECRET_KEY=change_this_secret
-# SQLite (default/dev):
-DATABASE_URL=sqlite:///database.db
-# Or PostgreSQL (prod style):
-# DATABASE_URL=postgresql+psycopg2://user:password@host:5432/dbname
-```
-
-### 5) Initialize the database (optional)
-
-```bash
-python init_database.py
-```
-
-### 6) Run in development
-
-```bash
+# Run the app
 python app.py
-# or, if app.py exposes app via Flask:
-# flask --app app run --debug
 ```
-
-The API will be available at: `http://127.0.0.1:5000/`
 
 ---
 
-## Authentication & Roles
+## Endpoints
 
-- Obtain a **JWT** by logging in.
-- Send the token on protected endpoints using:
+### **Authentication**
+#### `POST /register`
+Register a new user.
 
-```
-Authorization: Bearer <your_jwt_token>
-```
-
-**Roles**
-- `admin`: full access to all users’ tasks
-- `user`: can only view/update/delete their own tasks
-
----
-
-## API Endpoints
-
-### Auth
-
-**Register**
-```
-POST /register
-Content-Type: application/json
-
-{
-  "username": "alice",
-  "password": "StrongPass123",
-  "role": "user"   // or "admin" if allowed in your flow
-}
-```
-
-**Login**
-```
-POST /login
-Content-Type: application/json
-
-{
-  "username": "alice",
-  "password": "StrongPass123"
-}
-```
-
-**200 OK**
+**Body:**
 ```json
 {
-  "access_token": "<JWT>"
+  "username": "new_user",
+  "password": "mypassword",
+  "role": "admin"
 }
 ```
 
-### Tasks
+**Responses:**
+- `201` – User successfully registered.
+- `400` – Missing fields or username already exists.
 
-> All task routes require `Authorization: Bearer <JWT>`
+---
 
-**List tasks**
-```
-GET /tasks
-```
+#### `POST /login`
+Authenticate and obtain a JWT token.
 
-**Create task**
-```
-POST /tasks
-Content-Type: application/json
-
+**Body:**
+```json
 {
-  "title": "Buy milk",
-  "description": "2 liters of whole milk",
-  "done": false
+  "username": "new_user",
+  "password": "mypassword"
 }
 ```
 
-**Get task by id**
-```
-GET /tasks/<id>
-```
+**Responses:**
+- `200` – Token generated successfully.
+- `401` – Invalid credentials.
 
-**Update task**
-```
-PUT /tasks/<id>
-Content-Type: application/json
+---
 
+### **Tasks**
+> **Note:** Admin role required for creating, updating, deleting, and viewing tasks by ID.
+
+#### `GET /tasks`
+Get all tasks with pagination, search, and filtering.
+
+**Query Parameters:**
+- `page` *(int)* – Page number. Default: 1  
+- `per_page` *(int)* – Results per page. Default: 5  
+- `search` *(string)* – Search text for title or description.  
+- `status` *(string)* – Filter by task status.
+
+**Response:**
+```json
 {
-  "title": "Buy milk and eggs",
-  "description": "2 L milk + 12 eggs",
-  "done": true
+  "total": 10,
+  "page": 1,
+  "per_page": 5,
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Task Title",
+      "description": "Task Description",
+      "status": "pending"
+    }
+  ]
 }
 ```
 
-**Delete task**
-```
-DELETE /tasks/<id>
+---
+
+#### `POST /tasks` *(Admin only)*
+Create a new task.
+
+**Body:**
+```json
+{
+  "title": "New Task",
+  "description": "Task description",
+  "status": "pending"
+}
 ```
 
-- `admin`: can delete any task
-- `user`: can delete only their own task
+**Responses:**
+- `201` – Task successfully created.
+- `400` – Missing required fields.
 
 ---
 
-## Curl Examples
+#### `GET /tasks/<task_id>` *(Admin only)*
+Get a task by its ID.
 
-**Login**
-```bash
-curl -sX POST http://127.0.0.1:5000/login   -H 'Content-Type: application/json'   -d '{"username":"alice","password":"StrongPass123"}'
+**Response:**
+```json
+{
+  "id": 1,
+  "title": "Task Title",
+  "description": "Task Description",
+  "status": "pending"
+}
 ```
 
-**Create a task**
-```bash
-TOKEN="eyJhbGciOi..." # set your token
-curl -sX POST http://127.0.0.1:5000/tasks   -H "Authorization: Bearer $TOKEN"   -H 'Content-Type: application/json'   -d '{"title":"Buy milk","description":"2 L","done":false}'
+- `404` – Task not found.
+
+---
+
+#### `PUT /tasks/<task_id>` *(Admin only)*
+Update an existing task.
+
+**Body:**
+```json
+{
+  "title": "Updated title",
+  "description": "Updated description",
+  "status": "completed"
+}
 ```
 
-**List tasks**
-```bash
-curl -s http://127.0.0.1:5000/tasks   -H "Authorization: Bearer $TOKEN"
+**Responses:**
+- `200` – Task updated successfully.
+- `400` – Missing required fields.
+- `404` – Task not found.
+
+---
+
+#### `DELETE /tasks/<task_id>` *(Admin only)*
+Delete a task by ID.
+
+**Responses:**
+- `200` – Task successfully deleted.
+- `404` – Task not found.
+
+---
+
+### **Miscellaneous**
+#### `GET /health`
+Health check for the API.
+```json
+{
+  "status": "ok"
+}
+```
+
+#### `GET /`
+Welcome endpoint.  
+```json
+{
+  "message": "Welcome to the REST API",
+  "docs": "/apidocs"
+}
 ```
 
 ---
 
-## Running Tests
+## Authentication
+This API uses **JWT tokens**:
+- Include the token in the header:
+  ```
+  Authorization: Bearer <your_token>
+  ```
+- Tokens are generated at the `/login` endpoint.
 
-```bash
-pytest -q      # if tests are written with pytest
-# or
-python tests.py
+---
+
+## Swagger UI
+Interactive documentation is available at:
+```
+http://<host>:5000/apidocs
 ```
 
 ---
 
-## Deployment (Render)
-
-1. Push code to GitHub
-2. In Render, create a **Web Service** (Python)
-3. Set env vars `SECRET_KEY` and `DATABASE_URL`
-4. Start command:
-
-```bash
-python -m waitress --listen=0.0.0.0:$PORT wsgi:app
-# or:
-python -m waitress --listen=0.0.0.0:$PORT app:app
-```
-
-> Ensure your `DATABASE_URL` uses PostgreSQL in production.
-
----
-
-## Security Notes
-
-- Keep `SECRET_KEY` private and **rotate** if leaked
-- Use **HTTPS** in production
-- Issue short-lived JWTs and consider refresh tokens
-- Limit `admin` role assignment
+## Error Handling
+Common error responses:
+- `400` – Bad request (missing or invalid data).
+- `401` – Unauthorized (missing or invalid token).
+- `403` – Forbidden (insufficient role permissions).
+- `404` – Resource not found.
+- `422` – Invalid or expired token.
+- `500` – Internal server error.
